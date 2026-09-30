@@ -1,6 +1,6 @@
 /**
  * Quantumult X 菜鸟去广告脚本
- * V2：处理真实 HAR 中确认的开屏广告、首页弹窗、广告气泡和明确营销入口。
+ * V3：处理真实 HAR 中确认的开屏广告、CPS 商品推广、首页弹窗和广告气泡。
  * 保留查件、取件、寄件、出库码、回收、积分及账号相关功能。
  */
 
@@ -27,6 +27,22 @@ function 清理专用广告接口(响应数据) {
     响应数据.data[广告位编号] = [];
   }
 
+  return 删除数量;
+}
+
+function 清理联盟商品推荐(响应数据) {
+  if (!请求地址.includes("nbcps.presentation.fetch")) return 0;
+
+  const 商品流 = 响应数据?.data?.deal?.feeds;
+  if (!Array.isArray(商品流)) return 0;
+
+  let 删除数量 = 0;
+  for (const 商品分组 of 商品流) {
+    const 商品列表 = 商品分组?.data?.items;
+    if (Array.isArray(商品列表)) 删除数量 += 商品列表.length;
+  }
+
+  响应数据.data.deal.feeds = [];
   return 删除数量;
 }
 
@@ -110,6 +126,7 @@ try {
   const 页面数据 = 响应数据?.data?.data;
   const 删除数量 =
     清理专用广告接口(响应数据) +
+    清理联盟商品推荐(响应数据) +
     清理弹窗广告(页面数据) +
     清理首页营销(页面数据);
 
