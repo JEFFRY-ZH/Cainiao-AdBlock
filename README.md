@@ -2,8 +2,9 @@
 
 本项目基于菜鸟 iOS App 的真实 HAR 响应编写，不照搬旧脚本。
 
-## V1 处理范围
+## V2 处理范围
 
+- 清空开屏及广告素材接口 `ads.show`、`ads.mshow`、`ads.index`
 - 清空首页弹窗广告列表 `adsShowDTOList`
 - 清空弹窗接口返回的广告素材池
 - 移除“包裹赚赚”和“欢乐赢红包”入口
@@ -30,4 +31,8 @@
 
 `https://e2e-mtop.cainiao.com/gw/mtop.cainiao.app.e2e.engine.page.fetch/1.0`
 
-MitM 仅包含 `e2e-mtop.cainiao.com`，不解密淘宝、支付宝或其他阿里域名。
+`https://cn-acs.m.cainiao.com/gw/mtop.cainiao.guoguo.nbnetflow.ads.*.cn/1.0`
+
+`https://netflow-mtop.cainiao.com/gw/mtop.cainiao.guoguo.nbnetflow.ads.*.cn/1.0`
+
+MitM 仅包含上述三个菜鸟接口主机，不解密淘宝、支付宝或其他阿里域名。
