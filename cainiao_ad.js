@@ -1,11 +1,34 @@
 /**
  * Quantumult X 菜鸟去广告脚本
- * V1：仅处理真实 HAR 中确认的首页弹窗、广告气泡和明确营销入口。
+ * V2：处理真实 HAR 中确认的开屏广告、首页弹窗、广告气泡和明确营销入口。
  * 保留查件、取件、寄件、出库码、回收、积分及账号相关功能。
  */
 
 const 明确营销入口 = new Set(["packageQa", "sawPuzzle"]);
 const 营销搜索词 = /有奖|赚赚|赢红包/;
+const 请求地址 = $request.url;
+
+function 清理专用广告接口(响应数据) {
+  if (!请求地址.includes("nbnetflow.ads.")) return 0;
+  if (!响应数据?.data || typeof 响应数据.data !== "object") return 0;
+
+  let 删除数量 = 0;
+
+  if (Array.isArray(响应数据.data.result)) {
+    删除数量 += 响应数据.data.result.length;
+    响应数据.data.result = [];
+    return 删除数量;
+  }
+
+  for (const 广告位编号 of Object.keys(响应数据.data)) {
+    const 广告列表 = 响应数据.data[广告位编号];
+    if (!Array.isArray(广告列表)) continue;
+    删除数量 += 广告列表.length;
+    响应数据.data[广告位编号] = [];
+  }
+
+  return 删除数量;
+}
 
 function 清理弹窗广告(页面数据) {
   let 删除数量 = 0;
@@ -85,7 +108,10 @@ function 清理首页营销(页面数据) {
 try {
   const 响应数据 = JSON.parse($response.body);
   const 页面数据 = 响应数据?.data?.data;
-  const 删除数量 = 清理弹窗广告(页面数据) + 清理首页营销(页面数据);
+  const 删除数量 =
+    清理专用广告接口(响应数据) +
+    清理弹窗广告(页面数据) +
+    清理首页营销(页面数据);
 
   console.log("[菜鸟去广告] 本次共清理 " + 删除数量 + " 项广告或营销内容");
   $done({ body: JSON.stringify(响应数据) });
